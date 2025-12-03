@@ -1,0 +1,359 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #f5f5f5;
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    border: 1px solid #ddd;
+}
+
+header {
+    background: #333;
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 3px solid #000;
+}
+
+header h1 {
+    font-size: 1.8em;
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+.controls {
+    padding: 25px;
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.control-group label {
+    font-weight: normal;
+    color: #333;
+}
+
+.control-group input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    width: 120px;
+}
+
+.control-group input:focus {
+    outline: none;
+    border-color: #333;
+}
+
+.info {
+    color: #666;
+    font-size: 0.85em;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 10px 25px;
+    font-size: 14px;
+    border: 1px solid #333;
+    cursor: pointer;
+    background: white;
+}
+
+.btn-primary {
+    background: #333;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #000;
+}
+
+.btn-primary:disabled {
+    background: #ccc;
+    border-color: #ccc;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: white;
+    color: #333;
+}
+
+.btn-secondary:hover {
+    background: #f5f5f5;
+}
+
+.array-info {
+    padding: 15px 25px;
+    background: #f9f9f9;
+    border-bottom: 1px solid #ddd;
+}
+
+.array-info p {
+    margin: 0;
+    color: #333;
+    font-size: 0.9em;
+}
+
+#arrayPreview {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+}
+
+.race-container {
+    padding: 30px 25px;
+}
+
+.race-container h2 {
+    margin-bottom: 25px;
+    color: #333;
+    font-size: 1.3em;
+    font-weight: normal;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+.algorithm-card {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.algorithm-card.running {
+    border-color: #333;
+    background: #fafafa;
+}
+
+.algorithm-card.finished {
+    border-color: #666;
+    background: #f9f9f9;
+}
+
+.algorithm-card.winner {
+    border: 2px solid #000;
+    background: #f5f5f5;
+}
+
+.algo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.algo-header h3 {
+    font-size: 1em;
+    color: #333;
+    font-weight: normal;
+}
+
+.status {
+    padding: 4px 12px;
+    font-size: 0.8em;
+    border: 1px solid #ccc;
+    background: white;
+}
+
+.status.waiting {
+    background: #f5f5f5;
+    color: #666;
+}
+
+.status.running {
+    background: #333;
+    color: white;
+    border-color: #333;
+}
+
+.status.finished {
+    background: #000;
+    color: white;
+    border-color: #000;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: #e0e0e0;
+    margin-bottom: 12px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #333;
+    width: 0%;
+}
+
+.algo-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.time {
+    font-size: 0.95em;
+    color: #333;
+}
+
+.position {
+    font-size: 1em;
+    font-weight: bold;
+    color: #333;
+}
+
+.results {
+    padding: 30px 25px;
+    background: #fafafa;
+    border-top: 2px solid #333;
+}
+
+.results h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #333;
+    font-size: 1.5em;
+    font-weight: normal;
+}
+
+.podium {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.podium-place {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 20px;
+    text-align: center;
+    min-width: 180px;
+}
+
+#first-place {
+    border-top: 3px solid #000;
+}
+
+#second-place {
+    border-top: 3px solid #666;
+}
+
+#third-place {
+    border-top: 3px solid #999;
+}
+
+.medal {
+    font-size: 2em;
+    margin-bottom: 8px;
+}
+
+.podium-place h3 {
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+    font-weight: normal;
+}
+
+.algo-name {
+    font-weight: bold;
+    font-size: 1em;
+    color: #333;
+    margin: 8px 0;
+}
+
+.algo-time {
+    font-size: 0.95em;
+    color: #333;
+}
+
+#fullResults {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+#fullResults h3 {
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    font-weight: normal;
+    color: #333;
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+}
+
+.result-row:last-child {
+    border-bottom: none;
+}
+
+.result-position {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #333;
+    min-width: 50px;
+}
+
+.result-algo {
+    flex: 1;
+    color: #333;
+}
+
+.result-time {
+    font-weight: bold;
+    color: #333;
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    background: #fafafa;
+    color: #666;
+    font-size: 0.85em;
+    border-top: 1px solid #ddd;
+}
+
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.5em;
+    }
+
+    .control-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .podium {
+        flex-direction: column;
+    }
+}
