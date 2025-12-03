@@ -61,7 +61,7 @@ function updateAlgorithmStatus(algoId, status, time = null) {
         card.classList.add('running');
         statusElement.classList.add('running');
         statusElement.textContent = 'Ejecutando...';
-        progressFill.style.width = '50%';
+        progressFill.style.width = '0%'; // Empezar en 0%, se actualizará con los mensajes de progreso
     } else if (status === 'finished') {
         card.classList.add('finished');
         statusElement.classList.add('finished');
@@ -92,6 +92,19 @@ function updateAlgorithmPosition(algoId, position) {
 
     if (position === 1) {
         card.classList.add('winner');
+    }
+}
+
+/**
+ * Actualiza el progreso de un algoritmo en tiempo real
+ */
+function updateAlgorithmProgress(algoId, progress) {
+    const card = document.querySelector(`.algorithm-card[data-algo="${algoId}"]`);
+    if (!card) return;
+
+    const progressFill = card.querySelector('.progress-fill');
+    if (progressFill) {
+        progressFill.style.width = `${progress}%`;
     }
 }
 
@@ -149,6 +162,57 @@ function displayResults() {
 // ========== CONTROL DE LA CARRERA ==========
 
 /**
+ * Ejecuta un algoritmo usando Web Workers para verdadero paralelismo
+ */
+function executeAlgorithmWithWorker(algorithmId, data) {
+    return new Promise((resolve, reject) => {
+        // Crear un nuevo worker para este algoritmo
+        const worker = new Worker('worker.js');
+
+        // Configurar timeout para evitar workers colgados
+        const timeout = setTimeout(() => {
+            worker.terminate();
+            reject(new Error(`Timeout: ${algorithmId} tardó demasiado`));
+        }, 300000); // 5 minutos timeout
+
+        // Escuchar mensajes del worker (progreso y completado)
+        worker.onmessage = function(e) {
+            const message = e.data;
+
+            // Si es un mensaje de progreso, actualizar la barra
+            if (message.type === 'progress') {
+                updateAlgorithmProgress(message.algorithm, message.progress);
+            }
+            // Si es un mensaje de completado, resolver la promesa
+            else if (message.type === 'complete') {
+                clearTimeout(timeout);
+                worker.terminate(); // Terminar el worker cuando termine
+                resolve(message);
+            }
+            // Para retrocompatibilidad con mensajes sin tipo
+            else {
+                clearTimeout(timeout);
+                worker.terminate();
+                resolve(message);
+            }
+        };
+
+        // Manejar errores del worker
+        worker.onerror = function(error) {
+            clearTimeout(timeout);
+            worker.terminate();
+            reject(error);
+        };
+
+        // Enviar datos al worker
+        worker.postMessage({
+            algorithmName: algorithmId,
+            data: data
+        });
+    });
+}
+
+/**
  * Inicia la carrera de algoritmos
  */
 async function startRace() {
@@ -176,17 +240,21 @@ async function startRace() {
     });
 
     console.log('Iniciando carrera con', currentArray.length, 'elementos...');
+    console.log('Ejecutando algoritmos en paralelo usando Web Workers (multi-hilo)...');
 
-    // Ejecutar todos los algoritmos de forma asíncrona (simula paralelismo)
+    // Ejecutar todos los algoritmos EN PARALELO usando Web Workers
     const promises = algorithms.map(algo => {
-        console.log(`${algo.name} iniciado`);
-        return executeAlgorithm(algo.id, currentArray);
+        console.log(`${algo.name} iniciado en worker separado`);
+        return executeAlgorithmWithWorker(algo.id, currentArray);
     });
 
     // Esperar a que todos terminen y procesar resultados conforme llegan
-    for (const promise of promises) {
-        const result = await promise;
-        handleAlgorithmResult(result);
+    try {
+        const results = await Promise.all(promises);
+        results.forEach(result => handleAlgorithmResult(result));
+    } catch (error) {
+        console.error('Error durante la ejecución:', error);
+        alert('Ocurrió un error durante la ejecución de los algoritmos. Ver consola para detalles.');
     }
 
     // Cuando todos terminaron, mostrar resultados
@@ -256,4 +324,6 @@ arraySizeInput.addEventListener('input', function() {
 
 console.log('Aplicación de Carrera de Algoritmos cargada');
 console.log('Algoritmos disponibles:', algorithms.length);
-console.log('Nota: Esta versión usa ejecución asíncrona (no Web Workers) para compatibilidad con file://');
+console.log('Modo: Web Workers (ejecución paralela multi-hilo)');
+console.log('IMPORTANTE: Esta aplicación requiere ser servida desde un servidor web (http-server, Live Server, etc.)');
+console.log('No funcionará correctamente con file:// debido a las restricciones de seguridad de Web Workers');
