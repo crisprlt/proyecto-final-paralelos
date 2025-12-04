@@ -343,6 +343,71 @@ footer {
     border-top: 1px solid #ddd;
 }
 
+.info-note {
+    margin-top: 5px;
+    font-style: italic;
+    color: #999;
+}
+
+.race-section {
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+.section-header {
+    padding: 20px 25px;
+    background: #fafafa;
+    border-bottom: 2px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.section-header h2 {
+    margin: 0;
+    color: #333;
+    font-size: 1.3em;
+    font-weight: normal;
+}
+
+.search-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.search-controls label {
+    color: #333;
+    font-weight: normal;
+}
+
+.search-controls input {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    width: 120px;
+}
+
+.search-controls input:focus {
+    outline: none;
+    border-color: #333;
+}
+
+.result-found {
+    font-weight: bold;
+    color: #333;
+}
+
+.algo-result {
+    font-size: 0.85em;
+    color: #666;
+    margin-top: 5px;
+}
+
 @media (max-width: 768px) {
     header h1 {
         font-size: 1.5em;

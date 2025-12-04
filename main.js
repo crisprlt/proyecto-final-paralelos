@@ -1,24 +1,33 @@
 // ========== CONFIGURACIÓN Y VARIABLES GLOBALES ==========
 
-const algorithms = [
+const sortAlgorithms = [
     { id: 'bubble', name: 'Ordenamiento Burbuja' },
     { id: 'quick', name: 'Quick Sort' },
-    { id: 'insertion', name: 'Método de Inserción' },
+    { id: 'insertion', name: 'Método de Inserción' }
+];
+
+const searchAlgorithms = [
     { id: 'sequential', name: 'Búsqueda Secuencial' },
     { id: 'binary', name: 'Búsqueda Binaria' }
 ];
 
 let currentArray = [];
-let results = {};
+let sortedArray = [];
+let searchTarget = null;
+let sortResults = {};
+let searchResults = {};
 let raceInProgress = false;
 
 // ========== ELEMENTOS DEL DOM ==========
 
-const startButton = document.getElementById('startRace');
+const startSortButton = document.getElementById('startSortRace');
+const startSearchButton = document.getElementById('startSearchRace');
 const resetButton = document.getElementById('resetRace');
 const arraySizeInput = document.getElementById('arraySize');
+const searchTargetInput = document.getElementById('searchTarget');
 const arrayPreview = document.getElementById('arrayPreview');
-const resultsSection = document.getElementById('results');
+const sortResultsSection = document.getElementById('sortResults');
+const searchResultsSection = document.getElementById('searchResults');
 
 // ========== FUNCIONES DE UTILIDAD ==========
 
@@ -36,10 +45,11 @@ function generateRandomArray(size) {
 /**
  * Muestra una vista previa del arreglo generado
  */
-function displayArrayPreview(array) {
+function displayArrayPreview(array, isSorted = false) {
     const preview = array.slice(0, 10).join(', ');
     const remaining = array.length > 10 ? `, ... (${array.length} elementos en total)` : '';
-    arrayPreview.textContent = `[${preview}${remaining}]`;
+    const sortedLabel = isSorted ? ' [ORDENADO]' : '';
+    arrayPreview.textContent = `[${preview}${remaining}]${sortedLabel}`;
 }
 
 /**
@@ -61,7 +71,7 @@ function updateAlgorithmStatus(algoId, status, time = null) {
         card.classList.add('running');
         statusElement.classList.add('running');
         statusElement.textContent = 'Ejecutando...';
-        progressFill.style.width = '0%'; // Empezar en 0%, se actualizará con los mensajes de progreso
+        progressFill.style.width = '0%';
     } else if (status === 'finished') {
         card.classList.add('finished');
         statusElement.classList.add('finished');
@@ -69,7 +79,7 @@ function updateAlgorithmStatus(algoId, status, time = null) {
         progressFill.style.width = '100%';
 
         if (time !== null) {
-            timeElement.textContent = `Tiempo: ${time.toFixed(2)} ms`;
+            timeElement.textContent = `Tiempo: ${time.toFixed(4)} ms`;
         }
     } else {
         statusElement.classList.add('waiting');
@@ -87,11 +97,28 @@ function updateAlgorithmPosition(algoId, position) {
     if (!card) return;
 
     const positionElement = card.querySelector('.position');
-
     positionElement.textContent = `${position}° Lugar`;
 
     if (position === 1) {
         card.classList.add('winner');
+    }
+}
+
+/**
+ * Actualiza el resultado de búsqueda en la tarjeta
+ */
+function updateSearchResult(algoId, found, position) {
+    const card = document.querySelector(`.algorithm-card[data-algo="${algoId}"]`);
+    if (!card) return;
+
+    const positionElement = card.querySelector('.position');
+
+    if (found) {
+        positionElement.textContent = `Encontrado en posición ${position}`;
+        positionElement.style.color = '#00aa00';
+    } else {
+        positionElement.textContent = 'No encontrado';
+        positionElement.style.color = '#cc0000';
     }
 }
 
@@ -109,11 +136,10 @@ function updateAlgorithmProgress(algoId, progress) {
 }
 
 /**
- * Muestra los resultados finales de la carrera
+ * Muestra los resultados de la carrera de ordenamiento
  */
-function displayResults() {
-    // Ordenar resultados por tiempo
-    const sortedResults = Object.entries(results)
+function displaySortResults() {
+    const sortedResults = Object.entries(sortResults)
         .sort((a, b) => a[1].time - b[1].time);
 
     // Actualizar posiciones en las tarjetas
@@ -122,90 +148,137 @@ function displayResults() {
     });
 
     // Mostrar podio
-    const podiumPlaces = ['first-place', 'second-place', 'third-place'];
+    const podiumPlaces = ['sort-first-place', 'sort-second-place', 'sort-third-place'];
 
     podiumPlaces.forEach((placeId, index) => {
         const place = document.getElementById(placeId);
         if (sortedResults[index]) {
             const [algoId, data] = sortedResults[index];
-            const algoInfo = algorithms.find(a => a.id === algoId);
+            const algoInfo = sortAlgorithms.find(a => a.id === algoId);
 
             place.querySelector('.algo-name').textContent = algoInfo.name;
-            place.querySelector('.algo-time').textContent =
-                `${data.time.toFixed(2)} ms`;
+            place.querySelector('.algo-time').textContent = `${data.time.toFixed(4)} ms`;
         }
     });
 
     // Mostrar tabla completa de resultados
-    const fullResultsDiv = document.getElementById('fullResults');
-    fullResultsDiv.innerHTML = '<h3>Tabla Completa de Resultados</h3>';
+    const fullResultsDiv = document.getElementById('sortFullResults');
+    fullResultsDiv.innerHTML = '<h3>Tabla Completa de Resultados - Ordenamiento</h3>';
 
     sortedResults.forEach(([algoId, data], index) => {
-        const algoInfo = algorithms.find(a => a.id === algoId);
+        const algoInfo = sortAlgorithms.find(a => a.id === algoId);
         const row = document.createElement('div');
         row.className = 'result-row';
 
         row.innerHTML = `
             <span class="result-position">${index + 1}°</span>
             <span class="result-algo">${algoInfo.name}</span>
-            <span class="result-time">${data.time.toFixed(2)} ms</span>
+            <span class="result-time">${data.time.toFixed(4)} ms</span>
         `;
 
         fullResultsDiv.appendChild(row);
     });
 
     // Mostrar sección de resultados
-    resultsSection.style.display = 'block';
-    resultsSection.scrollIntoView({ behavior: 'smooth' });
+    sortResultsSection.style.display = 'block';
+    sortResultsSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-// ========== CONTROL DE LA CARRERA ==========
+/**
+ * Muestra los resultados de la carrera de búsqueda
+ */
+function displaySearchResults() {
+    const sortedResults = Object.entries(searchResults)
+        .sort((a, b) => a[1].time - b[1].time);
+
+    // Actualizar posiciones en las tarjetas
+    sortedResults.forEach(([algoId, data], index) => {
+        updateAlgorithmPosition(algoId, index + 1);
+        updateSearchResult(algoId, data.found, data.position);
+    });
+
+    // Mostrar podio
+    const podiumPlaces = ['search-first-place', 'search-second-place'];
+
+    podiumPlaces.forEach((placeId, index) => {
+        const place = document.getElementById(placeId);
+        if (sortedResults[index]) {
+            const [algoId, data] = sortedResults[index];
+            const algoInfo = searchAlgorithms.find(a => a.id === algoId);
+
+            place.querySelector('.algo-name').textContent = algoInfo.name;
+            place.querySelector('.algo-time').textContent = `${data.time.toFixed(4)} ms`;
+
+            const resultText = data.found ? `Encontrado en posición ${data.position}` : 'No encontrado';
+            place.querySelector('.algo-result').textContent = resultText;
+        }
+    });
+
+    // Mostrar tabla completa de resultados
+    const fullResultsDiv = document.getElementById('searchFullResults');
+    fullResultsDiv.innerHTML = '<h3>Tabla Completa de Resultados - Búsqueda</h3>';
+    fullResultsDiv.innerHTML += `<p>Valor buscado: <strong>${searchTarget}</strong></p>`;
+
+    sortedResults.forEach(([algoId, data], index) => {
+        const algoInfo = searchAlgorithms.find(a => a.id === algoId);
+        const row = document.createElement('div');
+        row.className = 'result-row';
+
+        const resultText = data.found ? `Posición ${data.position}` : 'No encontrado';
+
+        row.innerHTML = `
+            <span class="result-position">${index + 1}°</span>
+            <span class="result-algo">${algoInfo.name}</span>
+            <span class="result-time">${data.time.toFixed(4)} ms</span>
+            <span class="result-found">${resultText}</span>
+        `;
+
+        fullResultsDiv.appendChild(row);
+    });
+
+    // Mostrar sección de resultados
+    searchResultsSection.style.display = 'block';
+    searchResultsSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ========== CONTROL DE LA CARRERA DE ORDENAMIENTO ==========
 
 /**
- * Ejecuta un algoritmo usando Web Workers para verdadero paralelismo
+ * Ejecuta un algoritmo de ordenamiento usando Web Workers
  */
-function executeAlgorithmWithWorker(algorithmId, data) {
+function executeSortAlgorithmWithWorker(algorithmId, data) {
     return new Promise((resolve, reject) => {
-        // Crear un nuevo worker para este algoritmo
         const worker = new Worker('worker.js');
 
-        // Configurar timeout para evitar workers colgados
         const timeout = setTimeout(() => {
             worker.terminate();
             reject(new Error(`Timeout: ${algorithmId} tardó demasiado`));
-        }, 300000); // 5 minutos timeout
+        }, 300000);
 
-        // Escuchar mensajes del worker (progreso y completado)
         worker.onmessage = function(e) {
             const message = e.data;
 
-            // Si es un mensaje de progreso, actualizar la barra
             if (message.type === 'progress') {
                 updateAlgorithmProgress(message.algorithm, message.progress);
-            }
-            // Si es un mensaje de completado, resolver la promesa
-            else if (message.type === 'complete') {
+            } else if (message.type === 'complete') {
                 clearTimeout(timeout);
-                worker.terminate(); // Terminar el worker cuando termine
+                worker.terminate();
                 resolve(message);
-            }
-            // Para retrocompatibilidad con mensajes sin tipo
-            else {
+            } else {
                 clearTimeout(timeout);
                 worker.terminate();
                 resolve(message);
             }
         };
 
-        // Manejar errores del worker
         worker.onerror = function(error) {
             clearTimeout(timeout);
             worker.terminate();
             reject(error);
         };
 
-        // Enviar datos al worker
         worker.postMessage({
+            type: 'sort',
             algorithmName: algorithmId,
             data: data
         });
@@ -213,105 +286,292 @@ function executeAlgorithmWithWorker(algorithmId, data) {
 }
 
 /**
- * Inicia la carrera de algoritmos
+ * Inicia la carrera de algoritmos de ORDENAMIENTO
  */
-async function startRace() {
+async function startSortRace() {
     if (raceInProgress) return;
 
-    // Preparar variables
     raceInProgress = true;
-    results = {};
-    resultsSection.style.display = 'none';
+    sortResults = {};
+    sortResultsSection.style.display = 'none';
 
     // Generar arreglo aleatorio
     const arraySize = parseInt(arraySizeInput.value);
     currentArray = generateRandomArray(arraySize);
     displayArrayPreview(currentArray);
 
-    // Deshabilitar botón de inicio
-    startButton.disabled = true;
-    startButton.textContent = 'Carrera en progreso...';
+    // Deshabilitar botones
+    startSortButton.disabled = true;
+    startSortButton.textContent = 'Ordenando...';
+    startSearchButton.disabled = true;
 
     // Resetear estados visuales
-    algorithms.forEach(algo => {
+    sortAlgorithms.forEach(algo => {
         updateAlgorithmStatus(algo.id, 'running');
         const card = document.querySelector(`.algorithm-card[data-algo="${algo.id}"]`);
-        if (card) card.querySelector('.position').textContent = '';
+        if (card) {
+            card.querySelector('.position').textContent = '';
+            card.querySelector('.position').style.color = '';
+        }
     });
 
-    console.log('Iniciando carrera con', currentArray.length, 'elementos...');
-    console.log('Ejecutando algoritmos en paralelo usando Web Workers (multi-hilo)...');
+    console.log('Iniciando carrera de ORDENAMIENTO con', currentArray.length, 'elementos...');
 
-    // Ejecutar todos los algoritmos EN PARALELO usando Web Workers
-    const promises = algorithms.map(algo => {
+    // Ejecutar todos los algoritmos EN PARALELO
+    const promises = sortAlgorithms.map(algo => {
         console.log(`${algo.name} iniciado en worker separado`);
-        return executeAlgorithmWithWorker(algo.id, currentArray);
+        return executeSortAlgorithmWithWorker(algo.id, currentArray);
     });
 
-    // Esperar a que todos terminen y procesar resultados conforme llegan
     try {
         const results = await Promise.all(promises);
-        results.forEach(result => handleAlgorithmResult(result));
+        results.forEach(result => handleSortResult(result));
+
+        // Guardar el arreglo ordenado (usando el resultado de Quick Sort que suele ser correcto)
+        const quickSortResult = results.find(r => r.algorithm === 'quick');
+        if (quickSortResult && quickSortResult.isCorrect) {
+            sortedArray = [...currentArray].sort((a, b) => a - b);
+            displayArrayPreview(sortedArray, true);
+        }
+
+        displaySortResults();
     } catch (error) {
-        console.error('Error durante la ejecución:', error);
-        alert('Ocurrió un error durante la ejecución de los algoritmos. Ver consola para detalles.');
+        console.error('Error durante el ordenamiento:', error);
+        alert('Ocurrió un error durante la ejecución de los algoritmos de ordenamiento.');
     }
 
-    // Cuando todos terminaron, mostrar resultados
-    displayResults();
     raceInProgress = false;
-    startButton.disabled = false;
-    startButton.textContent = 'Iniciar Carrera';
+    startSortButton.disabled = false;
+    startSortButton.textContent = 'Iniciar Carrera de Ordenamiento';
+    startSearchButton.disabled = false;
 }
 
 /**
- * Maneja el resultado de un algoritmo
+ * Maneja el resultado de un algoritmo de ordenamiento
  */
-function handleAlgorithmResult(data) {
+function handleSortResult(data) {
     const { algorithm, time, success, isCorrect } = data;
+    console.log(`${algorithm} completado en ${time.toFixed(4)} ms - Correcto: ${isCorrect}`);
 
-    console.log(`${algorithm} completado en ${time.toFixed(2)} ms`);
-
-    // Guardar resultado
-    results[algorithm] = {
+    sortResults[algorithm] = {
         time: time,
         success: success,
         isCorrect: isCorrect
     };
 
-    // Actualizar UI
     updateAlgorithmStatus(algorithm, 'finished', time);
+}
+
+// ========== CONTROL DE LA CARRERA DE BÚSQUEDA ==========
+
+/**
+ * Ejecuta un algoritmo de búsqueda usando Web Workers
+ */
+function executeSearchAlgorithmWithWorker(algorithmId, data, target) {
+    return new Promise((resolve, reject) => {
+        const worker = new Worker('worker.js');
+
+        const timeout = setTimeout(() => {
+            worker.terminate();
+            reject(new Error(`Timeout: ${algorithmId} tardó demasiado`));
+        }, 300000);
+
+        worker.onmessage = function(e) {
+            const message = e.data;
+
+            if (message.type === 'progress') {
+                updateAlgorithmProgress(message.algorithm, message.progress);
+            } else if (message.type === 'complete') {
+                clearTimeout(timeout);
+                worker.terminate();
+                resolve(message);
+            } else {
+                clearTimeout(timeout);
+                worker.terminate();
+                resolve(message);
+            }
+        };
+
+        worker.onerror = function(error) {
+            clearTimeout(timeout);
+            worker.terminate();
+            reject(error);
+        };
+
+        worker.postMessage({
+            type: 'search',
+            algorithmName: algorithmId,
+            data: data,
+            target: target
+        });
+    });
+}
+
+/**
+ * Inicia la carrera de algoritmos de BÚSQUEDA
+ */
+async function startSearchRace() {
+    if (raceInProgress) return;
+
+    // Obtener el valor a buscar
+    searchTarget = parseInt(searchTargetInput.value);
+
+    if (isNaN(searchTarget)) {
+        alert('Por favor ingresa un valor numérico válido a buscar.');
+        return;
+    }
+
+    // Determinar qué arreglo usar
+    let arrayToSearch;
+    let isArraySorted = false;
+
+    if (sortedArray.length > 0) {
+        // Si hay arreglo ordenado, usarlo
+        arrayToSearch = sortedArray;
+        isArraySorted = true;
+        console.log('Usando arreglo ORDENADO para la búsqueda');
+    } else if (currentArray.length > 0) {
+        // Si solo hay arreglo desordenado, usarlo
+        arrayToSearch = currentArray;
+        isArraySorted = false;
+        console.log('Usando arreglo DESORDENADO para la búsqueda');
+        console.log('NOTA: Búsqueda Binaria NO funcionará correctamente en arreglo desordenado');
+    } else {
+        alert('Primero debes generar un arreglo (ejecuta la carrera de ordenamiento).');
+        return;
+    }
+
+    raceInProgress = true;
+    searchResults = {};
+    searchResultsSection.style.display = 'none';
+
+    // Deshabilitar botones
+    startSearchButton.disabled = true;
+    startSearchButton.textContent = 'Buscando...';
+    startSortButton.disabled = true;
+
+    // Resetear estados visuales
+    searchAlgorithms.forEach(algo => {
+        updateAlgorithmStatus(algo.id, 'running');
+        const card = document.querySelector(`.algorithm-card[data-algo="${algo.id}"]`);
+        if (card) {
+            card.querySelector('.position').textContent = '';
+            card.querySelector('.position').style.color = '';
+        }
+    });
+
+    const arrayType = isArraySorted ? 'ORDENADO' : 'DESORDENADO';
+    console.log(`Iniciando carrera de BÚSQUEDA del valor ${searchTarget} en arreglo ${arrayType} de ${arrayToSearch.length} elementos...`);
+
+    // Ejecutar todos los algoritmos EN PARALELO
+    const promises = searchAlgorithms.map(algo => {
+        console.log(`${algo.name} iniciado en worker separado`);
+        return executeSearchAlgorithmWithWorker(algo.id, arrayToSearch, searchTarget);
+    });
+
+    try {
+        const results = await Promise.all(promises);
+        results.forEach(result => handleSearchResult(result));
+        displaySearchResults();
+    } catch (error) {
+        console.error('Error durante la búsqueda:', error);
+        alert('Ocurrió un error durante la ejecución de los algoritmos de búsqueda.');
+    }
+
+    raceInProgress = false;
+    startSearchButton.disabled = false;
+    startSearchButton.textContent = 'Iniciar Carrera de Búsqueda';
+    startSortButton.disabled = false;
+}
+
+/**
+ * Maneja el resultado de un algoritmo de búsqueda
+ */
+function handleSearchResult(data) {
+    const { algorithm, time, success, found, position, target } = data;
+    const foundText = found ? `encontrado en posición ${position}` : 'no encontrado';
+    console.log(`${algorithm} completado en ${time.toFixed(4)} ms - ${foundText}`);
+
+    searchResults[algorithm] = {
+        time: time,
+        success: success,
+        found: found,
+        position: position
+    };
+
+    updateAlgorithmStatus(algorithm, 'finished', time);
+}
+
+/**
+ * Genera un valor aleatorio que SÍ existe en el arreglo
+ */
+function generateRandomSearchTarget() {
+    let arrayToUse;
+
+    if (sortedArray.length > 0) {
+        arrayToUse = sortedArray;
+    } else if (currentArray.length > 0) {
+        arrayToUse = currentArray;
+    } else {
+        alert('Primero genera un arreglo (ejecuta la carrera de ordenamiento).');
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * arrayToUse.length);
+    const randomValue = arrayToUse[randomIndex];
+    searchTargetInput.value = randomValue;
+    console.log(`Valor aleatorio generado: ${randomValue} (existe en posición ${randomIndex})`);
 }
 
 /**
  * Reinicia la aplicación
  */
 function resetRace() {
-    // Resetear variables
     raceInProgress = false;
-    results = {};
+    sortResults = {};
+    searchResults = {};
     currentArray = [];
+    sortedArray = [];
+    searchTarget = null;
 
-    // Resetear UI
-    algorithms.forEach(algo => {
+    // Resetear UI de ordenamiento
+    sortAlgorithms.forEach(algo => {
         updateAlgorithmStatus(algo.id, 'waiting');
         const card = document.querySelector(`.algorithm-card[data-algo="${algo.id}"]`);
-        if (card) card.querySelector('.position').textContent = '';
+        if (card) {
+            card.querySelector('.position').textContent = '';
+            card.querySelector('.position').style.color = '';
+        }
     });
 
-    arrayPreview.textContent = 'Haz clic en "Iniciar Carrera"';
-    resultsSection.style.display = 'none';
+    // Resetear UI de búsqueda
+    searchAlgorithms.forEach(algo => {
+        updateAlgorithmStatus(algo.id, 'waiting');
+        const card = document.querySelector(`.algorithm-card[data-algo="${algo.id}"]`);
+        if (card) {
+            card.querySelector('.position').textContent = '';
+            card.querySelector('.position').style.color = '';
+        }
+    });
 
-    startButton.disabled = false;
-    startButton.textContent = 'Iniciar Carrera';
+    arrayPreview.textContent = 'Haz clic en "Iniciar Carrera de Ordenamiento"';
+    sortResultsSection.style.display = 'none';
+    searchResultsSection.style.display = 'none';
+
+    startSortButton.disabled = false;
+    startSortButton.textContent = 'Iniciar Carrera de Ordenamiento';
+    startSearchButton.disabled = false;
+    startSearchButton.textContent = 'Iniciar Carrera de Búsqueda';
 
     console.log('Aplicación reiniciada');
 }
 
 // ========== EVENT LISTENERS ==========
 
-startButton.addEventListener('click', startRace);
+startSortButton.addEventListener('click', startSortRace);
+startSearchButton.addEventListener('click', startSearchRace);
 resetButton.addEventListener('click', resetRace);
+document.getElementById('generateTarget').addEventListener('click', generateRandomSearchTarget);
 
 // Validar tamaño del arreglo
 arraySizeInput.addEventListener('input', function() {
@@ -323,7 +583,6 @@ arraySizeInput.addEventListener('input', function() {
 // ========== INICIALIZACIÓN ==========
 
 console.log('Aplicación de Carrera de Algoritmos cargada');
-console.log('Algoritmos disponibles:', algorithms.length);
+console.log('Algoritmos de ordenamiento:', sortAlgorithms.length);
+console.log('Algoritmos de búsqueda:', searchAlgorithms.length);
 console.log('Modo: Web Workers (ejecución paralela multi-hilo)');
-console.log('IMPORTANTE: Esta aplicación requiere ser servida desde un servidor web (http-server, Live Server, etc.)');
-console.log('No funcionará correctamente con file:// debido a las restricciones de seguridad de Web Workers');

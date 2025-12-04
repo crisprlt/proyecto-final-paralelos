@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrera de Algoritmos de Ordenamiento - Paralelos</title>
+    <title>Carrera de Algoritmos - Ordenamiento y Búsqueda</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Carrera de Algoritmos de Ordenamiento</h1>
-            <p class="subtitle">Simulación de Ejecución Paralela (Asíncrona)</p>
+            <h1>Carrera de Algoritmos Paralelos</h1>
+            <p class="subtitle">Ordenamiento y Búsqueda con Web Workers (Multi-hilo)</p>
         </header>
 
         <div class="controls">
@@ -21,116 +21,158 @@
             </div>
 
             <div class="control-group">
-                <button id="startRace" class="btn-primary">Iniciar Carrera</button>
-                <button id="resetRace" class="btn-secondary">Reiniciar</button>
+                <button id="resetRace" class="btn-secondary">Reiniciar Todo</button>
             </div>
         </div>
 
         <div class="array-info" id="arrayInfo">
-            <p>Arreglo generado: <span id="arrayPreview">Haz clic en "Iniciar Carrera"</span></p>
+            <p>Arreglo generado: <span id="arrayPreview">Haz clic en "Iniciar Carrera de Ordenamiento"</span></p>
         </div>
 
-        <div class="race-container">
-            <h2>Estado de los Algoritmos</h2>
+        <!-- SECCIÓN 1: ALGORITMOS DE ORDENAMIENTO -->
+        <div class="race-section">
+            <div class="section-header">
+                <h2>1. Competencia de Ordenamiento</h2>
+                <button id="startSortRace" class="btn-primary">Iniciar Carrera de Ordenamiento</button>
+            </div>
 
-            <div class="algorithm-card" data-algo="bubble">
-                <div class="algo-header">
-                    <h3>Ordenamiento Burbuja</h3>
-                    <span class="status waiting">Esperando...</span>
+            <div class="race-container">
+                <div class="algorithm-card" data-algo="bubble">
+                    <div class="algo-header">
+                        <h3>Ordenamiento Burbuja</h3>
+                        <span class="status waiting">Esperando...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="algo-details">
+                        <span class="time">Tiempo: -- ms</span>
+                        <span class="position"></span>
+                    </div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
+
+                <div class="algorithm-card" data-algo="quick">
+                    <div class="algo-header">
+                        <h3>Quick Sort</h3>
+                        <span class="status waiting">Esperando...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="algo-details">
+                        <span class="time">Tiempo: -- ms</span>
+                        <span class="position"></span>
+                    </div>
                 </div>
-                <div class="algo-details">
-                    <span class="time">Tiempo: -- ms</span>
-                    <span class="position"></span>
+
+                <div class="algorithm-card" data-algo="insertion">
+                    <div class="algo-header">
+                        <h3>Método de Inserción</h3>
+                        <span class="status waiting">Esperando...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="algo-details">
+                        <span class="time">Tiempo: -- ms</span>
+                        <span class="position"></span>
+                    </div>
                 </div>
             </div>
 
-            <div class="algorithm-card" data-algo="quick">
-                <div class="algo-header">
-                    <h3>Quick Sort</h3>
-                    <span class="status waiting">Esperando...</span>
+            <div class="results" id="sortResults" style="display: none;">
+                <h2>Resultados - Ordenamiento</h2>
+                <div class="podium">
+                    <div class="podium-place" id="sort-first-place">
+                        <div class="medal">1</div>
+                        <h3>1er Lugar</h3>
+                        <p class="algo-name">--</p>
+                        <p class="algo-time">-- ms</p>
+                    </div>
+                    <div class="podium-place" id="sort-second-place">
+                        <div class="medal">2</div>
+                        <h3>2do Lugar</h3>
+                        <p class="algo-name">--</p>
+                        <p class="algo-time">-- ms</p>
+                    </div>
+                    <div class="podium-place" id="sort-third-place">
+                        <div class="medal">3</div>
+                        <h3>3er Lugar</h3>
+                        <p class="algo-name">--</p>
+                        <p class="algo-time">-- ms</p>
+                    </div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <div class="algo-details">
-                    <span class="time">Tiempo: -- ms</span>
-                    <span class="position"></span>
-                </div>
-            </div>
-
-            <div class="algorithm-card" data-algo="insertion">
-                <div class="algo-header">
-                    <h3>Método de Inserción</h3>
-                    <span class="status waiting">Esperando...</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <div class="algo-details">
-                    <span class="time">Tiempo: -- ms</span>
-                    <span class="position"></span>
-                </div>
-            </div>
-
-            <div class="algorithm-card" data-algo="sequential">
-                <div class="algo-header">
-                    <h3>Búsqueda Secuencial</h3>
-                    <span class="status waiting">Esperando...</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <div class="algo-details">
-                    <span class="time">Tiempo: -- ms</span>
-                    <span class="position"></span>
-                </div>
-            </div>
-
-            <div class="algorithm-card" data-algo="binary">
-                <div class="algo-header">
-                    <h3>Búsqueda Binaria</h3>
-                    <span class="status waiting">Esperando...</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <div class="algo-details">
-                    <span class="time">Tiempo: -- ms</span>
-                    <span class="position"></span>
-                </div>
+                <div id="sortFullResults"></div>
             </div>
         </div>
 
-        <div class="results" id="results" style="display: none;">
-            <h2>Resultados de la Carrera</h2>
-            <div class="podium">
-                <div class="podium-place" id="first-place">
-                    <div class="medal">1</div>
-                    <h3>1er Lugar</h3>
-                    <p class="algo-name">--</p>
-                    <p class="algo-time">-- ms</p>
-                </div>
-                <div class="podium-place" id="second-place">
-                    <div class="medal">2</div>
-                    <h3>2do Lugar</h3>
-                    <p class="algo-name">--</p>
-                    <p class="algo-time">-- ms</p>
-                </div>
-                <div class="podium-place" id="third-place">
-                    <div class="medal">3</div>
-                    <h3>3er Lugar</h3>
-                    <p class="algo-name">--</p>
-                    <p class="algo-time">-- ms</p>
+        <!-- SECCIÓN 2: ALGORITMOS DE BÚSQUEDA -->
+        <div class="race-section">
+            <div class="section-header">
+                <h2>2. Competencia de Búsqueda</h2>
+                <div class="search-controls">
+                    <label for="searchTarget">Valor a buscar:</label>
+                    <input type="number" id="searchTarget" placeholder="Ej: 5000">
+                    <button id="generateTarget" class="btn-secondary">Generar Aleatorio</button>
+                    <button id="startSearchRace" class="btn-primary">Iniciar Carrera de Búsqueda</button>
                 </div>
             </div>
-            <div id="fullResults"></div>
+
+            <div class="race-container">
+                <div class="algorithm-card" data-algo="sequential">
+                    <div class="algo-header">
+                        <h3>Búsqueda Secuencial</h3>
+                        <span class="status waiting">Esperando...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="algo-details">
+                        <span class="time">Tiempo: -- ms</span>
+                        <span class="position"></span>
+                    </div>
+                </div>
+
+                <div class="algorithm-card" data-algo="binary">
+                    <div class="algo-header">
+                        <h3>Búsqueda Binaria</h3>
+                        <span class="status waiting">Esperando...</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <div class="algo-details">
+                        <span class="time">Tiempo: -- ms</span>
+                        <span class="position"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results" id="searchResults" style="display: none;">
+                <h2>Resultados - Búsqueda</h2>
+                <div class="podium">
+                    <div class="podium-place" id="search-first-place">
+                        <div class="medal">1</div>
+                        <h3>1er Lugar</h3>
+                        <p class="algo-name">--</p>
+                        <p class="algo-time">-- ms</p>
+                        <p class="algo-result">--</p>
+                    </div>
+                    <div class="podium-place" id="search-second-place">
+                        <div class="medal">2</div>
+                        <h3>2do Lugar</h3>
+                        <p class="algo-name">--</p>
+                        <p class="algo-time">-- ms</p>
+                        <p class="algo-result">--</p>
+                    </div>
+                </div>
+                <div id="searchFullResults"></div>
+            </div>
         </div>
 
         <footer>
             <p>Proyecto Final - Algoritmos Paralelos | Universidad</p>
+            <p class="info-note">Nota: La búsqueda requiere un arreglo ordenado. Primero ejecuta la carrera de ordenamiento.</p>
         </footer>
     </div>
 

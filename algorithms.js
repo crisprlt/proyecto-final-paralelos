@@ -1,8 +1,17 @@
+// ========== ALGORITMOS - ARCHIVO DE REFERENCIA ==========
+//
+// NOTA: Este archivo contiene las implementaciones de referencia de los algoritmos.
+// Las implementaciones reales que se ejecutan están en worker.js
+//
+// Los algoritmos se ejecutan en Web Workers (worker.js) para verdadero paralelismo.
+// La lógica de control está en main.js
+
 // ========== ALGORITMOS DE ORDENAMIENTO ==========
 
 /**
  * Ordenamiento Burbuja (Bubble Sort)
  * Complejidad: O(n²)
+ * Implementación real: worker.js línea 14-34
  */
 function bubbleSort(arr) {
     const array = [...arr];
@@ -22,6 +31,7 @@ function bubbleSort(arr) {
 /**
  * Quick Sort
  * Complejidad: O(n log n) promedio
+ * Implementación real: worker.js línea 40-79
  */
 function quickSort(arr) {
     if (arr.length <= 1) {
@@ -49,6 +59,7 @@ function quickSort(arr) {
 /**
  * Método de Inserción (Insertion Sort)
  * Complejidad: O(n²)
+ * Implementación real: worker.js línea 85-108
  */
 function insertionSort(arr) {
     const array = [...arr];
@@ -69,124 +80,47 @@ function insertionSort(arr) {
     return array;
 }
 
-/**
- * Búsqueda Secuencial aplicada al ordenamiento
- * Complejidad: O(n²)
- */
-function sequentialSearchSort(arr) {
-    const array = [...arr];
-    const sorted = [];
-
-    while (array.length > 0) {
-        let minIndex = 0;
-        for (let i = 1; i < array.length; i++) {
-            if (array[i] < array[minIndex]) {
-                minIndex = i;
-            }
-        }
-        sorted.push(array[minIndex]);
-        array.splice(minIndex, 1);
-    }
-
-    return sorted;
-}
+// ========== ALGORITMOS DE BÚSQUEDA ==========
 
 /**
- * Búsqueda Binaria aplicada al ordenamiento
- * Complejidad: O(n² log n)
+ * Búsqueda Secuencial (Linear Search)
+ * Complejidad: O(n)
+ * Busca un valor en un arreglo recorriendo elemento por elemento
+ * Implementación real: worker.js línea 116-134
  */
-function binarySearchSort(arr) {
-    const array = [...arr];
-
-    for (let i = 1; i < array.length; i++) {
-        let key = array[i];
-
-        let left = 0;
-        let right = i - 1;
-
-        while (left <= right) {
-            let mid = Math.floor((left + right) / 2);
-            if (array[mid] > key) {
-                right = mid - 1;
-            } else {
-                left = mid + 1;
-            }
-        }
-
-        const position = left;
-        for (let j = i - 1; j >= position; j--) {
-            array[j + 1] = array[j];
-        }
-        array[position] = key;
-    }
-
-    return array;
-}
-
-/**
- * Verifica que un arreglo esté ordenado correctamente
- */
-function verifySorted(arr) {
-    for (let i = 0; i < arr.length - 1; i++) {
-        if (arr[i] > arr[i + 1]) {
-            return false;
+function sequentialSearch(arr, target) {
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] === target) {
+            return i; // Retorna la posición donde encontró el valor
         }
     }
-    return true;
+    return -1; // No encontrado
 }
 
 /**
- * Ejecuta un algoritmo de forma asíncrona
+ * Búsqueda Binaria (Binary Search)
+ * Complejidad: O(log n)
+ * Busca un valor en un arreglo ORDENADO dividiendo el espacio de búsqueda a la mitad
+ * IMPORTANTE: El arreglo DEBE estar ordenado
+ * Implementación real: worker.js línea 140-168
  */
-async function executeAlgorithm(algorithmName, data) {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const startTime = performance.now();
-            let sortedArray;
+function binarySearch(arr, target) {
+    let left = 0;
+    let right = arr.length - 1;
 
-            try {
-                switch(algorithmName) {
-                    case 'bubble':
-                        sortedArray = bubbleSort(data);
-                        break;
-                    case 'quick':
-                        sortedArray = quickSort(data);
-                        break;
-                    case 'insertion':
-                        sortedArray = insertionSort(data);
-                        break;
-                    case 'sequential':
-                        sortedArray = sequentialSearchSort(data);
-                        break;
-                    case 'binary':
-                        sortedArray = binarySearchSort(data);
-                        break;
-                    default:
-                        throw new Error('Algoritmo desconocido');
-                }
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
 
-                const endTime = performance.now();
-                const executionTime = endTime - startTime;
-                const isCorrect = verifySorted(sortedArray);
+        if (arr[mid] === target) {
+            return mid; // Encontrado
+        } else if (arr[mid] < target) {
+            left = mid + 1; // Buscar en la mitad derecha
+        } else {
+            right = mid - 1; // Buscar en la mitad izquierda
+        }
+    }
 
-                resolve({
-                    algorithm: algorithmName,
-                    time: executionTime,
-                    success: true,
-                    isCorrect: isCorrect,
-                    resultPreview: sortedArray.slice(0, 10)
-                });
-            } catch (error) {
-                const endTime = performance.now();
-                const executionTime = endTime - startTime;
-
-                resolve({
-                    algorithm: algorithmName,
-                    time: executionTime,
-                    success: false,
-                    error: error.message
-                });
-            }
-        }, 0);
-    });
+    return -1; // No encontrado
 }
+
+console.log('algorithms.js cargado (solo referencia, las implementaciones reales están en worker.js)');
