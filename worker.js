@@ -1,16 +1,3 @@
-// ========== WEB WORKER PARA EJECUCIÓN PARALELA DE ALGORITMOS ==========
-
-/**
- * Este worker ejecuta algoritmos de ordenamiento en un hilo separado
- * permitiendo verdadero paralelismo multi-núcleo
- */
-
-// ========== ALGORITMOS DE ORDENAMIENTO CON REPORTE DE PROGRESO ==========
-
-/**
- * Ordenamiento Burbuja (Bubble Sort)
- * Complejidad: O(n²)
- */
 function bubbleSort(arr, progressCallback) {
     const array = [...arr];
     const n = array.length;
@@ -23,7 +10,6 @@ function bubbleSort(arr, progressCallback) {
             }
         }
 
-        // Reportar progreso cada iteración del bucle externo
         if (progressCallback) {
             const progress = ((i + 1) / totalIterations) * 100;
             progressCallback(progress);
@@ -33,16 +19,11 @@ function bubbleSort(arr, progressCallback) {
     return array;
 }
 
-/**
- * Quick Sort
- * Complejidad: O(n log n) promedio
- */
 function quickSort(arr, progressCallback, progressState = null) {
     if (arr.length <= 1) {
         return arr;
     }
 
-    // En la primera llamada, establecer el estado de progreso
     if (progressState === null) {
         progressState = {
             totalSize: arr.length,
@@ -65,7 +46,6 @@ function quickSort(arr, progressCallback, progressState = null) {
         }
     }
 
-    // Incrementar elementos procesados y reportar progreso
     progressState.processedCount += arr.length;
     if (progressCallback && progressState.totalSize > 0) {
         const progress = Math.min((progressState.processedCount / progressState.totalSize) * 100, 99);
@@ -78,10 +58,6 @@ function quickSort(arr, progressCallback, progressState = null) {
     return [...sortedLeft, ...middle, ...sortedRight];
 }
 
-/**
- * Método de Inserción (Insertion Sort)
- * Complejidad: O(n²)
- */
 function insertionSort(arr, progressCallback) {
     const array = [...arr];
     const n = array.length;
@@ -97,7 +73,6 @@ function insertionSort(arr, progressCallback) {
 
         array[j + 1] = key;
 
-        // Reportar progreso cada iteración
         if (progressCallback) {
             const progress = (i / (n - 1)) * 100;
             progressCallback(progress);
@@ -107,17 +82,10 @@ function insertionSort(arr, progressCallback) {
     return array;
 }
 
-// ========== ALGORITMOS DE BÚSQUEDA ==========
-
-/**
- * Búsqueda Secuencial (Linear Search)
- * Complejidad: O(n)
- */
 function sequentialSearch(arr, target, progressCallback) {
     const n = arr.length;
 
     for (let i = 0; i < n; i++) {
-        // Reportar progreso
         if (progressCallback && i % 1000 === 0) {
             const progress = ((i + 1) / n) * 100;
             progressCallback(progress);
@@ -125,18 +93,14 @@ function sequentialSearch(arr, target, progressCallback) {
 
         if (arr[i] === target) {
             if (progressCallback) progressCallback(100);
-            return i; // Encontrado
+            return i;
         }
     }
 
     if (progressCallback) progressCallback(100);
-    return -1; // No encontrado
+    return -1;
 }
 
-/**
- * Búsqueda Binaria (Binary Search)
- * Complejidad: O(log n)
- */
 function binarySearch(arr, target, progressCallback) {
     let left = 0;
     let right = arr.length - 1;
@@ -147,7 +111,6 @@ function binarySearch(arr, target, progressCallback) {
         iterations++;
         const mid = Math.floor((left + right) / 2);
 
-        // Reportar progreso basado en iteraciones
         if (progressCallback) {
             const progress = (iterations / maxIterations) * 100;
             progressCallback(Math.min(progress, 99));
@@ -155,7 +118,7 @@ function binarySearch(arr, target, progressCallback) {
 
         if (arr[mid] === target) {
             if (progressCallback) progressCallback(100);
-            return mid; // Encontrado
+            return mid;
         } else if (arr[mid] < target) {
             left = mid + 1;
         } else {
@@ -164,12 +127,9 @@ function binarySearch(arr, target, progressCallback) {
     }
 
     if (progressCallback) progressCallback(100);
-    return -1; // No encontrado
+    return -1;
 }
 
-/**
- * Verifica que un arreglo esté ordenado correctamente
- */
 function verifySorted(arr) {
     for (let i = 0; i < arr.length - 1; i++) {
         if (arr[i] > arr[i + 1]) {
@@ -179,19 +139,11 @@ function verifySorted(arr) {
     return true;
 }
 
-// ========== MANEJADOR DE MENSAJES DEL WORKER ==========
-
-/**
- * Escucha mensajes desde el hilo principal y ejecuta el algoritmo solicitado
- */
 self.addEventListener('message', function(e) {
     const { type, algorithmName, data, target } = e.data;
 
     const startTime = performance.now();
-    let result;
-    let success = true;
 
-    // Callback para reportar progreso al hilo principal
     const progressCallback = (progress) => {
         self.postMessage({
             type: 'progress',
@@ -201,8 +153,8 @@ self.addEventListener('message', function(e) {
     };
 
     try {
+
         if (type === 'sort') {
-            // Ejecutar algoritmo de ORDENAMIENTO
             let sortedArray;
 
             switch(algorithmName) {
@@ -223,7 +175,6 @@ self.addEventListener('message', function(e) {
             const executionTime = endTime - startTime;
             const isCorrect = verifySorted(sortedArray);
 
-            // Enviar resultado de ordenamiento
             self.postMessage({
                 type: 'complete',
                 algorithm: algorithmName,
@@ -234,7 +185,6 @@ self.addEventListener('message', function(e) {
             });
 
         } else if (type === 'search') {
-            // Ejecutar algoritmo de BÚSQUEDA
             let foundIndex;
 
             switch(algorithmName) {
@@ -251,7 +201,6 @@ self.addEventListener('message', function(e) {
             const endTime = performance.now();
             const executionTime = endTime - startTime;
 
-            // Enviar resultado de búsqueda
             self.postMessage({
                 type: 'complete',
                 algorithm: algorithmName,
@@ -270,7 +219,6 @@ self.addEventListener('message', function(e) {
         const endTime = performance.now();
         const executionTime = endTime - startTime;
 
-        // Enviar error de vuelta al hilo principal
         self.postMessage({
             type: 'complete',
             algorithm: algorithmName,

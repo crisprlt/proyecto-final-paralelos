@@ -1,5 +1,3 @@
-// ========== CONFIGURACIÓN Y VARIABLES GLOBALES ==========
-
 const sortAlgorithms = [
     { id: 'bubble', name: 'Ordenamiento Burbuja' },
     { id: 'quick', name: 'Quick Sort' },
@@ -18,8 +16,6 @@ let sortResults = {};
 let searchResults = {};
 let raceInProgress = false;
 
-// ========== ELEMENTOS DEL DOM ==========
-
 const startSortButton = document.getElementById('startSortRace');
 const startSearchButton = document.getElementById('startSearchRace');
 const resetButton = document.getElementById('resetRace');
@@ -29,11 +25,6 @@ const arrayPreview = document.getElementById('arrayPreview');
 const sortResultsSection = document.getElementById('sortResults');
 const searchResultsSection = document.getElementById('searchResults');
 
-// ========== FUNCIONES DE UTILIDAD ==========
-
-/**
- * Genera un arreglo aleatorio de números
- */
 function generateRandomArray(size) {
     const array = [];
     for (let i = 0; i < size; i++) {
@@ -42,9 +33,6 @@ function generateRandomArray(size) {
     return array;
 }
 
-/**
- * Muestra una vista previa del arreglo generado
- */
 function displayArrayPreview(array, isSorted = false) {
     const preview = array.slice(0, 10).join(', ');
     const remaining = array.length > 10 ? `, ... (${array.length} elementos en total)` : '';
@@ -52,9 +40,6 @@ function displayArrayPreview(array, isSorted = false) {
     arrayPreview.textContent = `[${preview}${remaining}]${sortedLabel}`;
 }
 
-/**
- * Actualiza el estado visual de un algoritmo
- */
 function updateAlgorithmStatus(algoId, status, time = null) {
     const card = document.querySelector(`.algorithm-card[data-algo="${algoId}"]`);
     if (!card) return;
@@ -63,7 +48,6 @@ function updateAlgorithmStatus(algoId, status, time = null) {
     const timeElement = card.querySelector('.time');
     const progressFill = card.querySelector('.progress-fill');
 
-    // Remover clases previas
     card.classList.remove('running', 'finished', 'winner');
     statusElement.classList.remove('waiting', 'running', 'finished');
 
@@ -89,9 +73,6 @@ function updateAlgorithmStatus(algoId, status, time = null) {
     }
 }
 
-/**
- * Actualiza la posición de un algoritmo
- */
 function updateAlgorithmPosition(algoId, position) {
     const card = document.querySelector(`.algorithm-card[data-algo="${algoId}"]`);
     if (!card) return;
@@ -104,9 +85,6 @@ function updateAlgorithmPosition(algoId, position) {
     }
 }
 
-/**
- * Actualiza el resultado de búsqueda en la tarjeta
- */
 function updateSearchResult(algoId, found, position) {
     const card = document.querySelector(`.algorithm-card[data-algo="${algoId}"]`);
     if (!card) return;
@@ -122,9 +100,6 @@ function updateSearchResult(algoId, found, position) {
     }
 }
 
-/**
- * Actualiza el progreso de un algoritmo en tiempo real
- */
 function updateAlgorithmProgress(algoId, progress) {
     const card = document.querySelector(`.algorithm-card[data-algo="${algoId}"]`);
     if (!card) return;
@@ -135,19 +110,14 @@ function updateAlgorithmProgress(algoId, progress) {
     }
 }
 
-/**
- * Muestra los resultados de la carrera de ordenamiento
- */
 function displaySortResults() {
     const sortedResults = Object.entries(sortResults)
         .sort((a, b) => a[1].time - b[1].time);
 
-    // Actualizar posiciones en las tarjetas
     sortedResults.forEach(([algoId, data], index) => {
         updateAlgorithmPosition(algoId, index + 1);
     });
 
-    // Mostrar podio
     const podiumPlaces = ['sort-first-place', 'sort-second-place', 'sort-third-place'];
 
     podiumPlaces.forEach((placeId, index) => {
@@ -179,25 +149,19 @@ function displaySortResults() {
         fullResultsDiv.appendChild(row);
     });
 
-    // Mostrar sección de resultados
     sortResultsSection.style.display = 'block';
     sortResultsSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-/**
- * Muestra los resultados de la carrera de búsqueda
- */
 function displaySearchResults() {
     const sortedResults = Object.entries(searchResults)
         .sort((a, b) => a[1].time - b[1].time);
 
-    // Actualizar posiciones en las tarjetas
     sortedResults.forEach(([algoId, data], index) => {
         updateAlgorithmPosition(algoId, index + 1);
         updateSearchResult(algoId, data.found, data.position);
     });
 
-    // Mostrar podio
     const podiumPlaces = ['search-first-place', 'search-second-place'];
 
     podiumPlaces.forEach((placeId, index) => {
@@ -241,11 +205,6 @@ function displaySearchResults() {
     searchResultsSection.scrollIntoView({ behavior: 'smooth' });
 }
 
-// ========== CONTROL DE LA CARRERA DE ORDENAMIENTO ==========
-
-/**
- * Ejecuta un algoritmo de ordenamiento usando Web Workers
- */
 function executeSortAlgorithmWithWorker(algorithmId, data) {
     return new Promise((resolve, reject) => {
         const worker = new Worker('worker.js');
@@ -285,9 +244,6 @@ function executeSortAlgorithmWithWorker(algorithmId, data) {
     });
 }
 
-/**
- * Inicia la carrera de algoritmos de ORDENAMIENTO
- */
 async function startSortRace() {
     if (raceInProgress) return;
 
@@ -317,7 +273,6 @@ async function startSortRace() {
 
     console.log('Iniciando carrera de ORDENAMIENTO con', currentArray.length, 'elementos...');
 
-    // Ejecutar todos los algoritmos EN PARALELO
     const promises = sortAlgorithms.map(algo => {
         console.log(`${algo.name} iniciado en worker separado`);
         return executeSortAlgorithmWithWorker(algo.id, currentArray);
@@ -325,9 +280,9 @@ async function startSortRace() {
 
     try {
         const results = await Promise.all(promises);
+        console.log('Resultados recibidos:', results);
         results.forEach(result => handleSortResult(result));
 
-        // Guardar el arreglo ordenado (usando el resultado de Quick Sort que suele ser correcto)
         const quickSortResult = results.find(r => r.algorithm === 'quick');
         if (quickSortResult && quickSortResult.isCorrect) {
             sortedArray = [...currentArray].sort((a, b) => a - b);
@@ -337,7 +292,7 @@ async function startSortRace() {
         displaySortResults();
     } catch (error) {
         console.error('Error durante el ordenamiento:', error);
-        alert('Ocurrió un error durante la ejecución de los algoritmos de ordenamiento.');
+        console.error('Stack trace:', error.stack);
     }
 
     raceInProgress = false;
@@ -346,11 +301,15 @@ async function startSortRace() {
     startSearchButton.disabled = false;
 }
 
-/**
- * Maneja el resultado de un algoritmo de ordenamiento
- */
 function handleSortResult(data) {
+    console.log('handleSortResult recibió:', data);
     const { algorithm, time, success, isCorrect } = data;
+
+    if (!algorithm || time === undefined) {
+        console.error('Datos inválidos en handleSortResult:', data);
+        return;
+    }
+
     console.log(`${algorithm} completado en ${time.toFixed(4)} ms - Correcto: ${isCorrect}`);
 
     sortResults[algorithm] = {
@@ -362,11 +321,6 @@ function handleSortResult(data) {
     updateAlgorithmStatus(algorithm, 'finished', time);
 }
 
-// ========== CONTROL DE LA CARRERA DE BÚSQUEDA ==========
-
-/**
- * Ejecuta un algoritmo de búsqueda usando Web Workers
- */
 function executeSearchAlgorithmWithWorker(algorithmId, data, target) {
     return new Promise((resolve, reject) => {
         const worker = new Worker('worker.js');
@@ -407,9 +361,6 @@ function executeSearchAlgorithmWithWorker(algorithmId, data, target) {
     });
 }
 
-/**
- * Inicia la carrera de algoritmos de BÚSQUEDA
- */
 async function startSearchRace() {
     if (raceInProgress) return;
 
@@ -421,17 +372,14 @@ async function startSearchRace() {
         return;
     }
 
-    // Determinar qué arreglo usar
     let arrayToSearch;
     let isArraySorted = false;
 
     if (sortedArray.length > 0) {
-        // Si hay arreglo ordenado, usarlo
         arrayToSearch = sortedArray;
         isArraySorted = true;
         console.log('Usando arreglo ORDENADO para la búsqueda');
     } else if (currentArray.length > 0) {
-        // Si solo hay arreglo desordenado, usarlo
         arrayToSearch = currentArray;
         isArraySorted = false;
         console.log('Usando arreglo DESORDENADO para la búsqueda');
@@ -445,12 +393,10 @@ async function startSearchRace() {
     searchResults = {};
     searchResultsSection.style.display = 'none';
 
-    // Deshabilitar botones
     startSearchButton.disabled = true;
     startSearchButton.textContent = 'Buscando...';
     startSortButton.disabled = true;
 
-    // Resetear estados visuales
     searchAlgorithms.forEach(algo => {
         updateAlgorithmStatus(algo.id, 'running');
         const card = document.querySelector(`.algorithm-card[data-algo="${algo.id}"]`);
@@ -463,7 +409,6 @@ async function startSearchRace() {
     const arrayType = isArraySorted ? 'ORDENADO' : 'DESORDENADO';
     console.log(`Iniciando carrera de BÚSQUEDA del valor ${searchTarget} en arreglo ${arrayType} de ${arrayToSearch.length} elementos...`);
 
-    // Ejecutar todos los algoritmos EN PARALELO
     const promises = searchAlgorithms.map(algo => {
         console.log(`${algo.name} iniciado en worker separado`);
         return executeSearchAlgorithmWithWorker(algo.id, arrayToSearch, searchTarget);
@@ -471,11 +416,12 @@ async function startSearchRace() {
 
     try {
         const results = await Promise.all(promises);
+        console.log('Resultados de búsqueda recibidos:', results);
         results.forEach(result => handleSearchResult(result));
         displaySearchResults();
     } catch (error) {
         console.error('Error durante la búsqueda:', error);
-        alert('Ocurrió un error durante la ejecución de los algoritmos de búsqueda.');
+        console.error('Stack trace:', error.stack);
     }
 
     raceInProgress = false;
@@ -484,11 +430,15 @@ async function startSearchRace() {
     startSortButton.disabled = false;
 }
 
-/**
- * Maneja el resultado de un algoritmo de búsqueda
- */
 function handleSearchResult(data) {
-    const { algorithm, time, success, found, position, target } = data;
+    console.log('handleSearchResult recibió:', data);
+    const { algorithm, time, success, found, position } = data;
+
+    if (!algorithm || time === undefined) {
+        console.error('Datos inválidos en handleSearchResult:', data);
+        return;
+    }
+
     const foundText = found ? `encontrado en posición ${position}` : 'no encontrado';
     console.log(`${algorithm} completado en ${time.toFixed(4)} ms - ${foundText}`);
 
@@ -502,9 +452,6 @@ function handleSearchResult(data) {
     updateAlgorithmStatus(algorithm, 'finished', time);
 }
 
-/**
- * Genera un valor aleatorio que SÍ existe en el arreglo
- */
 function generateRandomSearchTarget() {
     let arrayToUse;
 
@@ -523,9 +470,6 @@ function generateRandomSearchTarget() {
     console.log(`Valor aleatorio generado: ${randomValue} (existe en posición ${randomIndex})`);
 }
 
-/**
- * Reinicia la aplicación
- */
 function resetRace() {
     raceInProgress = false;
     sortResults = {};
@@ -534,7 +478,6 @@ function resetRace() {
     sortedArray = [];
     searchTarget = null;
 
-    // Resetear UI de ordenamiento
     sortAlgorithms.forEach(algo => {
         updateAlgorithmStatus(algo.id, 'waiting');
         const card = document.querySelector(`.algorithm-card[data-algo="${algo.id}"]`);
@@ -544,7 +487,6 @@ function resetRace() {
         }
     });
 
-    // Resetear UI de búsqueda
     searchAlgorithms.forEach(algo => {
         updateAlgorithmStatus(algo.id, 'waiting');
         const card = document.querySelector(`.algorithm-card[data-algo="${algo.id}"]`);
@@ -566,23 +508,23 @@ function resetRace() {
     console.log('Aplicación reiniciada');
 }
 
-// ========== EVENT LISTENERS ==========
-
 startSortButton.addEventListener('click', startSortRace);
 startSearchButton.addEventListener('click', startSearchRace);
 resetButton.addEventListener('click', resetRace);
 document.getElementById('generateTarget').addEventListener('click', generateRandomSearchTarget);
 
-// Validar tamaño del arreglo
 arraySizeInput.addEventListener('input', function() {
     const value = parseInt(this.value);
     if (value < 100) this.value = 100;
     if (value > 50000) this.value = 50000;
 });
 
-// ========== INICIALIZACIÓN ==========
-
+console.log('='.repeat(60));
 console.log('Aplicación de Carrera de Algoritmos cargada');
 console.log('Algoritmos de ordenamiento:', sortAlgorithms.length);
 console.log('Algoritmos de búsqueda:', searchAlgorithms.length);
 console.log('Modo: Web Workers (ejecución paralela multi-hilo)');
+console.log('='.repeat(60));
+console.log('Para mediciones exactas de memoria:');
+console.log('  node --expose-gc measure-memory.js');
+console.log('='.repeat(60));
